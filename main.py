@@ -1,19 +1,24 @@
 import json
+import datetime
 
 users = {}
 logged_in = None
+             
+def trSave(log_data):
+    with open("transaction.txt", 'a') as f:
+        f.write(log_data)
 
 def userLoad():
     global users
     try:
-        with open("accounts.json", "r", encoding="utf-8") as dosya:
-            users = json.load(dosya)
-    except FileNotFoundError:
-        users = []  # Eğer dosya bulunmazsa boş bir liste
+        with open("accounts.json", "r", encoding="utf-8") as f:
+            users = json.load(f)
+    except:
+        users = {}
 
 def userSave(data):
-    with open("accounts.json", "w", encoding="utf-8") as dosya:
-        json.dump(data, dosya, indent=4)
+    with open("accounts.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
 
 def createAccount():
     id = 1
@@ -28,6 +33,9 @@ def createAccount():
     id += 1
 
 def singIn():
+    global logged_in
+    global name
+
     name = input("Name : ")
     for i in users:     
         while name not in users:
@@ -67,18 +75,21 @@ while True:
         print("[4] Transaction history")
         print("[5] Log out")
 
-        #Pul yukleme/cekme
         choice = input("Select : ")
         if choice == "1":
-            amount = input("Amount of money")
-            balance += amount
+            amount = float(input("Amount of money : "))       
+            users[name]["balance"] += amount
+            transaction = f'Date:{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  Name:{name}  ID:{users[name]["card_no"]}  Status:{amount} manat loaded in the account\n'
+            trSave(transaction)
         if choice == "2":
             amount = input("Amount of money")
             while amount > balance:
                 print("Insufficient balance")
                 amount = input("Amount of money")
             else:
-                balance += amount
+                balance -= amount
+                transaction = f'Date:{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  Name:{name}  ID:{users[name]["card_no"]}  Status:{amount} manat withdrawn from the account\n'
+                trSave(transaction)
         if choice == "3":
             print(balance)
         if choice == "4":
