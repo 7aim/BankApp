@@ -79,19 +79,20 @@ while True:
         if choice == "1":
             amount = float(input("Amount of money : "))       
             users[name]["balance"] += amount
-            transaction = f'Date:{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  Name:{name}  ID:{users[name]["card_no"]}  Status:{amount} manat loaded in the account\n'
+            userSave(users)
+            transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name:{name} | ID : {users[name]["card_no"]} | Status : {amount} manat loaded in the account\n'
             trSave(transaction)
         if choice == "2":
             amount = input("Amount of money")
-            while amount > balance:
+            while amount > users[name]["balance"]:
                 print("Insufficient balance")
                 amount = input("Amount of money")
             else:
-                balance -= amount
-                transaction = f'Date:{datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}  Name:{name}  ID:{users[name]["card_no"]}  Status:{amount} manat withdrawn from the account\n'
+                users[name]["balance"] -= amount
+                transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat withdrawn from the account\n'
                 trSave(transaction)
         if choice == "3":
-            print(balance)
+            print(users[name]["balance"])
         if choice == "4":
             pass
         if choice == "5":
