@@ -8,14 +8,16 @@ logged_in = None
 def hashPassword(password):
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
+# Tranzaksiya 
 def trLoad():
     with open("db/transaction.txt", 'r') as f:
         return f.read()
 
-def trSave(log_data):
+def trSave(tr_data):
     with open("db/transaction.txt", 'a') as f:
-        f.write(log_data)
+        f.write(tr_data)
 
+# Hesablar
 def userLoad():
     global users
     try:
@@ -28,6 +30,7 @@ def userSave(data):
     with open("db/accounts.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
+# Yadda qalan giris
 def loadSession():
     try:
         with open("db/session.json","r") as f:
@@ -45,6 +48,18 @@ def createAccount():
     password = input("Password : ")
     password = hashPassword(password)
     card_no = input("Card Number : ")
+    while len(card_no) != 4:
+        print("Card no must be 4 digits")
+        card_no = input("Card Number : ")
+
+    user_card_no = []
+    for i in users:
+        user_card_no.append(users[i]["card_no"])
+
+    while card_no in user_card_no:
+        print("This card no already exists")
+        card_no = input("Card Number : ")
+
     balance = 0
     log = []
 
@@ -136,10 +151,10 @@ while True:
                     trSave(transaction)
             if choice == "3":
                 card_no = input("Card no : ")
-                nickHave = False
-                for nick in users:
-                    if users[nick]["card_no"] == card_no:
-                        print(f"Is this the person you want to send money to? {nick}")
+                cardHave = False
+                for i in users:
+                    if users[i]["card_no"] == card_no:
+                        print(f"Is this the person you want to send money to? {i}")
                         choice = input("Yes [1] | No [2] : ")
                         if choice == "1":
                             try:
@@ -152,13 +167,13 @@ while True:
                                 amount = float(input("Amount : "))
 
                             users[logged_in]["balance"] -= amount
-                            users[nick]["balance"] += amount
+                            users[i]["balance"] += amount
                             userSave(users)
-                            nickHave = False
+                            cardHave = True
 
                         if choice == "2":
                             print("Process unsuccessful")
-                if nickHave is True:
+                if cardHave is True:
                     print("Process successful : Money sent.")
                 else:
                     print("Process unsuccessful : Card no not found.")
@@ -171,5 +186,4 @@ while True:
                 logged_in = None
                 saveSession(logged_in)
                 break
-
 
