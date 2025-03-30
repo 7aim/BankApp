@@ -34,12 +34,13 @@ def loadSession():
             return json.load(f)
     except json.JSONDecodeError:
         return {}
+    
 def saveSession(session_data):
     with open("session.json","w") as f:
         json.dump(session_data, f, indent=4)
 
 def createAccount():
-    id = 1
+    id = len(users) + 1
     name = input("Name : ")
     password = input("Password : ")
     password = hashPassword(password)
@@ -49,28 +50,31 @@ def createAccount():
 
     users[name] = {"id" : id,'password': password,"card_no" : card_no,"balance" : balance,"log" : log}
     userSave(users)
-    id += 1
 
-def singIn():
+    print("Account is created")
+    logged_in = name
+    saveSession(logged_in)
+
+def signIn():
     global logged_in
     global name
 
     name = input("Name : ")
     for i in users:     
         while name not in users:
-            print("False")
+            print("Name not found")
             name = input("Name : ")
 
     password = hashPassword(input("Password : "))
     while password not in users[name]["password"]:
-        print("False")
+        print("Password is incorrect")
         password = input("Password : ")
 
-    card_no = input("Card Number : ")
+    """card_no = input("Card Number : ")
     while card_no not in users[name]["card_no"]:
-        print("False")
-        card_no = input("Card Number : ")
-    print("True")
+        print("Card number is incorrect")
+        card_no = input("Card Number : ")"""
+
     logged_in = name
     saveSession(logged_in)
 
@@ -79,19 +83,23 @@ while True:
     logged_in = loadSession()
 
     if not logged_in:
+        print("\nHello, Welcome")
         print("[1] Create account")
         print("[2] Sign in")
         print("[3] Exit")
 
         choice = input("Select : ")
-
         if choice == "1":
-            createAccount()
-    
+            createAccount() 
         if choice == "2":
-            singIn()
+            signIn()
+        if choice == "3":
+            break
+
     else:
+        name = logged_in
         while True:
+            print(f"\nLogged in with the name {logged_in}")
             print("[1] Deposit")
             print("[2] Withdraw")
             print("[3] View balance")
@@ -100,13 +108,23 @@ while True:
 
             choice = input("Select : ")
             if choice == "1":
-                amount = float(input("Amount of money : "))       
+                
+                try:
+                    amount = float(input("Amount: "))
+                except ValueError:
+                    print("Invalid amount!")  
+
                 users[name]["balance"] += amount
                 userSave(users)
                 transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat loaded in the account\n'
                 trSave(transaction)
             if choice == "2":
-                amount = float(input("Amount of money : "))
+                
+                try:
+                    amount = float(input("Amount: "))
+                except ValueError:
+                    print("Invalid amount!")
+
                 while amount > users[name]["balance"]:
                     print("Insufficient balance")
                     amount = float(input("Amount of money : "))
@@ -124,5 +142,3 @@ while True:
                 saveSession(logged_in)
                 break
 
-    if choice == "3":
-        break
