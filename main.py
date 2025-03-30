@@ -102,9 +102,10 @@ while True:
             print(f"\nLogged in with the name {logged_in}")
             print("[1] Deposit")
             print("[2] Withdraw")
-            print("[3] View balance")
-            print("[4] Transaction history")
-            print("[5] Log out")
+            print("[3] Send money")
+            print("[4] View balance")
+            print("[5] Transaction history")
+            print("[6] Log out")
 
             choice = input("Select : ")
             if choice == "1":
@@ -127,18 +128,43 @@ while True:
 
                 while amount > users[name]["balance"]:
                     print("Insufficient balance")
-                    amount = float(input("Amount of money : "))
+                    amount = float(input("Amount : "))
                 else:
                     users[name]["balance"] -= amount
                     userSave(users)
                     transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat withdrawn from the account\n'
                     trSave(transaction)
             if choice == "3":
-                print(users[name]["balance"])
+                card_no = input("Card no : ")
+
+                for nick in users:
+                    if users[nick]["card_no"] == card_no:
+                        print(f"Is this the person you want to send money to? {nick}")
+                        choice = input("Yes [1] | No [2] : ")
+                        if choice == "1":
+                            try:
+                                amount = float(input("Amount: "))
+                            except ValueError:
+                                print("Invalid amount!")
+
+                            while amount > users[name]["balance"]:
+                                print("Insufficient balance")
+                                amount = float(input("Amount : "))
+
+                            users[logged_in]["balance"] -= amount
+                            users[nick]["balance"] += amount
+                            userSave(users)
+
+                        if choice == "2":
+                            pass
+                        
             if choice == "4":
-                print(trLoad())
+                print(users[name]["balance"])
             if choice == "5":
+                print(trLoad())
+            if choice == "6":
                 logged_in = None
                 saveSession(logged_in)
                 break
+
 
