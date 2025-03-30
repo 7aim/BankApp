@@ -136,7 +136,7 @@ while True:
                     trSave(transaction)
             if choice == "3":
                 card_no = input("Card no : ")
-
+                nickHave = False
                 for nick in users:
                     if users[nick]["card_no"] == card_no:
                         print(f"Is this the person you want to send money to? {nick}")
@@ -154,10 +154,15 @@ while True:
                             users[logged_in]["balance"] -= amount
                             users[nick]["balance"] += amount
                             userSave(users)
+                            nickHave = False
 
                         if choice == "2":
-                            pass
-                        
+                            print("Process unsuccessful")
+                if nickHave is True:
+                    print("Process successful : Money sent.")
+                else:
+                    print("Process unsuccessful : Card no not found.")
+
             if choice == "4":
                 print(users[name]["balance"])
             if choice == "5":
