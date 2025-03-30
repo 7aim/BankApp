@@ -28,6 +28,16 @@ def userSave(data):
     with open("accounts.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
+def loadSession():
+    try:
+        with open("session.json","r") as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return {}
+def saveSession(session_data):
+    with open("session.json","w") as f:
+        json.dump(session_data, f, indent=4)
+
 def createAccount():
     id = 1
     name = input("Name : ")
@@ -62,21 +72,25 @@ def singIn():
         card_no = input("Card Number : ")
     print("True")
     logged_in = name
+    saveSession(logged_in)
 
 while True:
     userLoad()
+    logged_in = loadSession()
 
-    print("[1] Create account")
-    print("[2] Sign in")
-    print("[3] Exit")
+    if not logged_in:
+        print("[1] Create account")
+        print("[2] Sign in")
+        print("[3] Exit")
 
-    choice = input("Select : ")
+        choice = input("Select : ")
 
-    if choice == "1":
-        createAccount()
+        if choice == "1":
+            createAccount()
     
-    if choice == "2":
-        singIn()
+        if choice == "2":
+            singIn()
+    else:
         while True:
             print("[1] Deposit")
             print("[2] Withdraw")
@@ -107,6 +121,7 @@ while True:
                 print(trLoad())
             if choice == "5":
                 logged_in = None
+                saveSession(logged_in)
                 break
 
     if choice == "3":
