@@ -9,34 +9,34 @@ def hashPassword(password):
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
 def trLoad():
-    with open("transaction.txt", 'r') as f:
+    with open("db/transaction.txt", 'r') as f:
         return f.read()
 
 def trSave(log_data):
-    with open("transaction.txt", 'a') as f:
+    with open("db/transaction.txt", 'a') as f:
         f.write(log_data)
 
 def userLoad():
     global users
     try:
-        with open("accounts.json", "r", encoding="utf-8") as f:
+        with open("db/accounts.json", "r", encoding="utf-8") as f:
             users = json.load(f)
     except:
         users = {}
 
 def userSave(data):
-    with open("accounts.json", "w", encoding="utf-8") as f:
+    with open("db/accounts.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
 def loadSession():
     try:
-        with open("session.json","r") as f:
+        with open("db/session.json","r") as f:
             return json.load(f)
     except json.JSONDecodeError:
         return {}
     
 def saveSession(session_data):
-    with open("session.json","w") as f:
+    with open("db/session.json","w") as f:
         json.dump(session_data, f, indent=4)
 
 def createAccount():
