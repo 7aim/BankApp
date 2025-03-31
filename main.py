@@ -157,29 +157,37 @@ while True:
                         print(f"Is this the person you want to send money to? {i}")
                         choice = input("Yes [1] | No [2] : ")
                         if choice == "1":
+
                             try:
                                 amount = float(input("Amount: "))
                             except ValueError:
                                 print("Invalid amount!")
+                                break
 
                             while amount > users[name]["balance"]:
-                                print("Insufficient balance")
-                                amount = float(input("Amount : "))
+                                print(f"Insufficient balance.Your balance : {users[name]["balance"]}")
+                                choice = input("Continue [1] | Go back [2] : ")
+                                if choice == "1":                                    
+                                    amount = float(input("Amount : "))
+                                else:
+                                    break
 
                             users[logged_in]["balance"] -= amount
                             users[i]["balance"] += amount
                             userSave(users)
                             cardHave = True
 
+                            if cardHave is True:
+                                print("Process successful : Money sent.")
+                            else:
+                                print("Process unsuccessful : Card no not found.")
+
                         if choice == "2":
                             print("Process unsuccessful")
-                if cardHave is True:
-                    print("Process successful : Money sent.")
-                else:
-                    print("Process unsuccessful : Card no not found.")
+
 
             if choice == "4":
-                print(users[name]["balance"])
+                print(f"Your balance : {users[name]["balance"]}")
             if choice == "5":
                 print(trLoad())
             if choice == "6":
