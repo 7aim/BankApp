@@ -4,247 +4,312 @@ import hashlib
 import os
 
 users = {}
-logged_in = None
+logged_in_user = None
 
-def hashPassword(password):
+# --------------- Utility Functions ---------------
+def hash_password(password):
     return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
-# Tranzaksiya 
-def trLoad():
-    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
-    with open("db/transaction.txt", 'a+') as f:
-        f.seek(0)
-        return f.read()
+def create_directory():
+    os.makedirs("db", exist_ok=True)
 
-def trSave(tr_data):
-    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
-    with open("db/transaction.txt", 'a') as f:
-        f.write(tr_data)
-
-# Hesablar
-def userLoad():
-    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
-
-    global users
-
-    if not os.path.exists("db/session.json"):
-        with open("db/session.json", "w") as f:
-            json.dump({}, f)
-
+# --------------- Database Operations ---------------
+def load_transactions():
+    create_directory()
     try:
-        with open("db/accounts.json", "r", encoding="utf-8") as f:
+        with open("db/transactions.txt", 'r+') as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
+
+def save_transaction(transaction_data):
+    create_directory()
+    with open("db/transactions.txt", 'a') as f:
+        f.write(transaction_data)
+
+def load_users():
+    global users
+    create_directory()
+    try:
+        with open("db/accounts.json", 'r') as f:
             users = json.load(f)
-    except:
+    except (FileNotFoundError, json.JSONDecodeError):
         users = {}
 
-def userSave(data):
-    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+def save_users():
+    create_directory()
+    with open("db/accounts.json", 'w') as f:
+        json.dump(users, f, indent=4)
 
-    with open("db/accounts.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
-
-# Yadda qalan giris
-def loadSession():
-    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
-
-    if not os.path.exists("db/session.json"):
-        with open("db/session.json", "w") as f:
-            json.dump({}, f)
-
+def load_session():
+    create_directory()
     try:
-        with open("db/session.json","r") as f:
+        with open("db/session.json", 'r') as f:
             return json.load(f)
-    except json.JSONDecodeError:
-        return {}
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+def save_session():
+    create_directory()
+    with open("db/session.json", 'w') as f:
+        json.dump(logged_in_user, f, indent=4)
+
+# --------------- Commission Handling ---------------
+def load_commission():
+    create_directory()
+    try:
+        with open("db/commission.json", 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"type": "fixed", "value": 1.0}
+
+def save_commission(commission_type, value):
+    create_directory()
+    with open("db/commission.json", 'w') as f:
+        json.dump({"type": commission_type, "value": value}, f)
+
+def update_budget(amount):
+    create_directory()
+    with open("db/budget.txt", 'a') as f:
+        f.write(f"{amount}\n")
+
+# --------------- Account Management ---------------
+def create_account():
+    global users
+    load_users()
     
-def saveSession(session_data):
-    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+    full_name = input("Full name: ")
+    while full_name in users:
+        print("Username already exists!")
+        full_name = input("Full name: ")
 
-    with open("db/session.json","w") as f:
-        json.dump(session_data, f, indent=4)
+    password = input("Password: ")
+    while len(password) < 5:
+        print("Password must be at least 5 characters!")
+        password = input("Password: ")
 
-def createAccount():
-    id = len(users) + 1
-    name = input("Name : ")
+    card_number = input("Card number (16 digits): ")
+    while len(card_number) != 16 or not card_number.isdigit():
+        print("Invalid card number!")
+        card_number = input("Card number: ")
 
-    password = input("Password : ")
-    while len(password) <= 4:
-        print("Password length must be greater than 4")
-        password = input("Password : ")
-    password = hashPassword(password)
+    secure_3d = input("Set 3D Secure password: ")
+    while len(secure_3d) < 4:
+        print("3D password must be at least 4 characters!")
+        secure_3d = input("3D Secure password: ")
 
-    card_no = input("Card Number : ")
-    while len(card_no) != 4:
-        print("Card no must be 4 digits")
-        card_no = input("Card Number : ")
+    # Set role (first user becomes Manager)
+    role = "Customer"
+    if not users:
+        role = "Manager"
 
-    user_card_no = []
-    for i in users:
-        user_card_no.append(users[i]["card_no"])
+    users[full_name] = {
+        "id": len(users) + 1,
+        "password": hash_password(password),
+        "card_number": card_number,
+        "balance": 0.0,
+        "transactions": [],
+        "role": role,
+        "3d_secure": hash_password(secure_3d),
+        "credit_balance": 0.0
+    }
+    save_users()
+    print("Account created successfully!")
 
-    while card_no in user_card_no:
-        print("This card no already exists")
-        card_no = input("Card Number : ")
-
-    balance = 0
-    log = []
-
-    users[name] = {"id" : id,'password': password,"card_no" : card_no,"balance" : balance,"log" : log}
-    userSave(users)
-
-    print("Account is created")
-    logged_in = name
-    saveSession(logged_in)
-
-def signIn():
-    global logged_in
-    global name
-
-    name = input("Name : ")
-    for i in users:     
-        while name not in users:
-            print("Name not found")
-            name = input("Name : ")
-
-    password = input("Password : ")
-    password = hashPassword(password)  
-
-    while password not in users[name]["password"]:
-        print("Password is incorrect")
-        password = input("Password : ")
-
-    """card_no = input("Card Number : ")
-    while card_no not in users[name]["card_no"]:
-        print("Card number is incorrect")
-        card_no = input("Card Number : ")"""
-
-    logged_in = name
-    saveSession(logged_in)
-
-while True:
-    userLoad()
-    logged_in = loadSession()
+# --------------- Authentication ---------------
+def login():
+    global logged_in_user
+    load_users()
     
-    # Eger hesab yaddasda deyilse program bu hisseden baslayir.
-    if not logged_in:
-        print("\nHello, Welcome")
-        print("[1] Create account")
-        print("[2] Sign in")
-        print("[3] Exit")
+    username = input("Username: ")
+    while username not in users:
+        print("User not found!")
+        username = input("Username: ")
 
-        choice = input("Select : ")
-        if choice == "1":
-            createAccount() 
-        if choice == "2":
-            signIn()
-        if choice == "3":
-            break
+    password = input("Password: ")
+    while hash_password(password) != users[username]["password"]:
+        print("Incorrect password!")
+        password = input("Password: ")
 
-    # Eger hesab yaddasdadirsa program bu hisseden baslayir.
+    logged_in_user = username
+    save_session()
+
+# --------------- Banking Operations ---------------
+def deposit():
+    amount = float(input("Deposit amount: "))
+    if amount <= 0:
+        print("Amount must be positive!")
+        return
+    
+    users[logged_in_user]["balance"] += amount
+    save_users()
+    
+    transaction = f"{datetime.datetime.now()} | DEPOSIT | +{amount} | Balance: {users[logged_in_user]['balance']}\n"
+    save_transaction(transaction)
+    print("Deposit successful!")
+
+def withdraw():
+    amount = float(input("Withdrawal amount: "))
+    if amount <= 0:
+        print("Amount must be positive!")
+        return
+    
+    if users[logged_in_user]["balance"] < amount:
+        print("Insufficient funds!")
+        return
+    
+    users[logged_in_user]["balance"] -= amount
+    save_users()
+    
+    transaction = f"{datetime.datetime.now()} | WITHDRAW | -{amount} | Balance: {users[logged_in_user]['balance']}\n"
+    save_transaction(transaction)
+    print("Withdrawal successful!")
+
+def transfer():
+    recipient = input("Recipient username: ")
+    if recipient not in users:
+        print("Recipient not found!")
+        return
+    
+    # 3D Secure Verification
+    secure_3d = input("3D Secure password: ")
+    if hash_password(secure_3d) != users[logged_in_user]["3d_secure"]:
+        print("3D Security verification failed!")
+        return
+    
+    amount = float(input("Transfer amount: "))
+    if amount <= 0:
+        print("Amount must be positive!")
+        return
+    
+    # Calculate commission
+    commission = load_commission()
+    if commission["type"] == "fixed":
+        fee = commission["value"]
     else:
-        name = logged_in
-        while True:
-            print(f"\nLogged in with the name {logged_in}")
-            print("[0] Admin panel")
-            print("[1] Deposit")
-            print("[2] Withdraw")
-            print("[3] Send money")
-            print("[4] View balance")
-            print("[5] Transaction history")
-            print("[6] Reset password")
-            print("[7] Log out")
+        fee = amount * (commission["value"] / 100)
+    
+    total = amount + fee
+    
+    if users[logged_in_user]["balance"] < total:
+        print(f"Insufficient funds! Needed: {total} (including {fee} fee)")
+        return
+    
+    # Perform transfer
+    users[logged_in_user]["balance"] -= total
+    users[recipient]["balance"] += amount
+    save_users()
+    
+    # Update budget
+    update_budget(fee)
+    
+    # Record transactions
+    timestamp = datetime.datetime.now()
+    sender_transaction = f"{timestamp} | TRANSFER | -{total} | To: {recipient} | Balance: {users[logged_in_user]['balance']}\n"
+    recipient_transaction = f"{timestamp} | RECEIVED | +{amount} | From: {logged_in_user} | Balance: {users[recipient]['balance']}\n"
+    save_transaction(sender_transaction + recipient_transaction)
+    print("Transfer successful!")
 
-            choice = input("Select : ")
+# --------------- Admin Functions ---------------
+def admin_panel():
+    print("\nADMIN PANEL")
+    print("1. View Banking Budget")
+    print("2. Manage Commission")
+    print("3. View All Users")
+    choice = input("Select option: ")
+    
+    if choice == "1":
+        try:
+            with open("db/budget.txt", 'r') as f:
+                total = sum(float(line.strip()) for line in f)
+            print(f"Total Banking Budget: {total:.2f}")
+        except FileNotFoundError:
+            print("No budget data available!")
+    
+    elif choice == "2":
+        print("\nCurrent Commission Settings:")
+        commission = load_commission()
+        print(f"Type: {commission['type'].capitalize()}")
+        print(f"Value: {commission['value']}")
+        
+        new_type = input("Enter new type (fixed/percent): ").lower()
+        while new_type not in ["fixed", "percent"]:
+            print("Invalid commission type!")
+            new_type = input("Enter new type (fixed/percent): ").lower()
+        
+        new_value = float(input("Enter new value: "))
+        save_commission(new_type, new_value)
+        print("Commission settings updated!")
+    
+    elif choice == "3":
+        print("\nRegistered Users:")
+        for user in users:
+            print(f"- {user} ({users[user]['role']})")
 
-            if choice == "0":
-                pass
+# --------------- Main Interface ---------------
+def main_menu():
+    while True:
+        print("\nMAIN MENU")
+        print("1. Create Account")
+        print("2. Login")
+        print("3. Exit")
+        choice = input("Select option: ")
+        
+        if choice == "1":
+            create_account()
+        elif choice == "2":
+            login()
+            logged_in_menu()
+        elif choice == "3":
+            exit()
+        else:
+            print("Invalid choice!")
 
-            if choice == "1":
-                try:
-                    amount = float(input("Amount: "))
-                except ValueError:
-                    print("Invalid amount!")  
-                if amount > 0:
-                    users[name]["balance"] += amount
-                else:
-                    print("Amount must be greater than 0!")
-                    break
+def logged_in_menu():
+    global logged_in_user
+    while True:
+        user = users[logged_in_user]
+        print(f"\nWelcome, {logged_in_user} ({user['role']})")
+        print("1. Deposit")
+        print("2. Withdraw")
+        print("3. Transfer")
+        print("4. Check Balance")
+        print("5. Transaction History")
+        print("6. Change Password")
+        if user["role"] == "Manager":
+            print("7. Admin Panel")
+        print("8. Logout")
+        
+        choice = input("Select option: ")
+        
+        if choice == "1":
+            deposit()
+        elif choice == "2":
+            withdraw()
+        elif choice == "3":
+            transfer()
+        elif choice == "4":
+            print(f"\nCurrent Balance: {user['balance']:.2f}")
+            print(f"Credit Balance: {user['credit_balance']:.2f}")
+        elif choice == "5":
+            print("\nTRANSACTION HISTORY:")
+            print(load_transactions())
+        elif choice == "6":
+            new_password = input("New password: ")
+            while len(new_password) < 5:
+                print("Password too short!")
+                new_password = input("New password: ")
+            user["password"] = hash_password(new_password)
+            save_users()
+            print("Password changed!")
+        elif choice == "7" and user["role"] == "Manager":
+            admin_panel()
+        elif choice == "8":
+            logged_in_user = None
+            save_session()
+            return
+        else:
+            print("Invalid option!")
 
-                userSave(users)
-                transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat loaded in the account\n'
-                trSave(transaction)
-
-            if choice == "2":
-                try:
-                    amount = float(input("Amount: "))
-                except ValueError:
-                    print("Invalid amount!")
-
-                while amount > users[name]["balance"] and amount > 0:
-                    print("Insufficient balance or invalid amount")
-                    amount = float(input("Amount : "))
-                else:
-                    users[name]["balance"] -= amount
-                    userSave(users)
-                    transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat withdrawn from the account\n'
-                    trSave(transaction)
-
-            if choice == "3":
-                card_no = input("Card no : ")       
-                cardHave = False  # Programin dovure girib-girmediyini yoxlamaq ucun yaradilan bool deyiseni
-                for i in users:
-                    if users[i]["card_no"] == card_no:
-                        print(f"Is this the person you want to send money to? {i}")
-                        choice = input("Yes [1] | No [2] : ")
-                        if choice == "1":
-                            try:
-                                amount = float(input("Amount: "))
-                            except ValueError:
-                                print("Invalid amount!")
-                                break
-
-                            while amount > users[name]["balance"] and amount > 0:
-                                print(f"Insufficient balance.Your balance : {users[name]["balance"]}")
-                                choice = input("Continue [1] | Go back [2] : ")
-                                if choice == "1":                                    
-                                    amount = float(input("Amount : "))
-                                else:
-                                    break
-
-                            users[logged_in]["balance"] -= amount
-                            users[i]["balance"] += amount
-                            userSave(users)
-                            cardHave = True
-
-                            if cardHave is True:
-                                print("Process successful : Money sent.")
-                                # Tranzakisiya pulu gonderen ve alan olmaqla 2 hesapdada qeyd olunur
-                                transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat sent from account\n'
-                                transaction += f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {i} | ID : {users[i]["card_no"]} | Status : {amount} manat transferred to account\n'
-                                trSave(transaction)
-                            else:
-                                print("Process unsuccessful : Card no not found.")
-
-                        if choice == "2":
-                            print("Process unsuccessful")
-
-            if choice == "4":
-                print(f"Your balance : {users[name]["balance"]}")
-
-            if choice == "5":
-                print(trLoad())
-
-            if choice == "6":
-                password = input("Enter new password  : ") 
-                while len(password) <= 4:
-                    print("Password length must be greater than 4")
-                    password = input("Enter new password : ")
-                password = hashPassword(password)   
-                users[name]["password"] = password
-                print("Your password changed")
-                userSave(users)
-
-            if choice == "7":
-                logged_in = None
-                saveSession(logged_in)
-                break
+if __name__ == "__main__":
+    main_menu()
