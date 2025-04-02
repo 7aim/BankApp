@@ -24,6 +24,7 @@ def trSave(tr_data):
 # Hesablar
 def userLoad():
     os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+
     global users
 
     if not os.path.exists("db/session.json"):
@@ -38,6 +39,7 @@ def userLoad():
 
 def userSave(data):
     os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+
     with open("db/accounts.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
@@ -57,6 +59,7 @@ def loadSession():
     
 def saveSession(session_data):
     os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+
     with open("db/session.json","w") as f:
         json.dump(session_data, f, indent=4)
 
