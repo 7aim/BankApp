@@ -1,6 +1,7 @@
 import json
 import datetime
 import hashlib
+import os
 
 users = {}
 logged_in = None
@@ -10,16 +11,25 @@ def hashPassword(password):
 
 # Tranzaksiya 
 def trLoad():
-    with open("db/transaction.txt", 'r') as f:
+    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+    with open("db/transaction.txt", 'a+') as f:
+        f.seek(0)
         return f.read()
 
 def trSave(tr_data):
+    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
     with open("db/transaction.txt", 'a') as f:
         f.write(tr_data)
 
 # Hesablar
 def userLoad():
+    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
     global users
+
+    if not os.path.exists("db/session.json"):
+        with open("db/session.json", "w") as f:
+            json.dump({}, f)
+
     try:
         with open("db/accounts.json", "r", encoding="utf-8") as f:
             users = json.load(f)
@@ -27,11 +37,18 @@ def userLoad():
         users = {}
 
 def userSave(data):
+    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
     with open("db/accounts.json", "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
 # Yadda qalan giris
 def loadSession():
+    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
+
+    if not os.path.exists("db/session.json"):
+        with open("db/session.json", "w") as f:
+            json.dump({}, f)
+
     try:
         with open("db/session.json","r") as f:
             return json.load(f)
@@ -39,6 +56,7 @@ def loadSession():
         return {}
     
 def saveSession(session_data):
+    os.makedirs("db", exist_ok=True) # 'db' qovlugu yoxdursa yaradir
     with open("db/session.json","w") as f:
         json.dump(session_data, f, indent=4)
 
@@ -227,4 +245,3 @@ while True:
                 logged_in = None
                 saveSession(logged_in)
                 break
-            
