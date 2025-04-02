@@ -68,10 +68,6 @@ def save_commission(commission_type, value):
     with open("db/commission.json", 'w') as f:
         json.dump({"type": commission_type, "value": value}, f)
 
-def update_budget(amount):
-    create_directory()
-    with open("db/budget.txt", 'a') as f:
-        f.write(f"{amount}\n")
 
 # --------------- Account Management ---------------
 def create_account():
@@ -111,7 +107,6 @@ def create_account():
         "transactions": [],
         "role": role,
         "3d_secure": hash_password(secure_3d),
-        "credit_balance": 0.0
     }
     save_users()
     print("Account created successfully!")
@@ -200,9 +195,6 @@ def transfer():
     users[recipient]["balance"] += amount
     save_users()
     
-    # Update budget
-    update_budget(fee)
-    
     # Record transactions
     timestamp = datetime.datetime.now()
     sender_transaction = f"{timestamp} | TRANSFER | -{total} | To: {recipient} | Balance: {users[logged_in_user]['balance']}\n"
@@ -213,20 +205,11 @@ def transfer():
 # --------------- Admin Functions ---------------
 def admin_panel():
     print("\nADMIN PANEL")
-    print("1. View Banking Budget")
     print("2. Manage Commission")
     print("3. View All Users")
     choice = input("Select option: ")
-    
+
     if choice == "1":
-        try:
-            with open("db/budget.txt", 'r') as f:
-                total = sum(float(line.strip()) for line in f)
-            print(f"Total Banking Budget: {total:.2f}")
-        except FileNotFoundError:
-            print("No budget data available!")
-    
-    elif choice == "2":
         print("\nCurrent Commission Settings:")
         commission = load_commission()
         print(f"Type: {commission['type'].capitalize()}")
@@ -241,7 +224,7 @@ def admin_panel():
         save_commission(new_type, new_value)
         print("Commission settings updated!")
     
-    elif choice == "3":
+    elif choice == "2":
         print("\nRegistered Users:")
         for user in users:
             print(f"- {user} ({users[user]['role']})")
@@ -290,7 +273,6 @@ def logged_in_menu():
             transfer()
         elif choice == "4":
             print(f"\nCurrent Balance: {user['balance']:.2f}")
-            print(f"Credit Balance: {user['credit_balance']:.2f}")
         elif choice == "5":
             print("\nTRANSACTION HISTORY:")
             print(load_transactions())
@@ -311,5 +293,4 @@ def logged_in_menu():
         else:
             print("Invalid option!")
 
-if __name__ == "__main__":
-    main_menu()
+main_menu()
