@@ -27,9 +27,3 @@ A simple command-line banking application with user management, transactions, an
 ## Requirements 🛠️
 - Python 3.6+
 - No external dependencies
-
-## Installation 📥
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/banking-app.git
-cd banking-app
