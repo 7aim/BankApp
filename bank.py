@@ -205,8 +205,8 @@ def transfer():
 # --------------- Admin Functions ---------------
 def admin_panel():
     print("\nADMIN PANEL")
-    print("2. Manage Commission")
-    print("3. View All Users")
+    print("1. Manage Commission")
+    print("2. View All Users")
     choice = input("Select option: ")
 
     if choice == "1":
