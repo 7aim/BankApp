@@ -103,7 +103,8 @@ def signIn():
 while True:
     userLoad()
     logged_in = loadSession()
-
+    
+    # Eger hesab yaddasda deyilse program bu hisseden baslayir.
     if not logged_in:
         print("\nHello, Welcome")
         print("[1] Create account")
@@ -118,10 +119,12 @@ while True:
         if choice == "3":
             break
 
+    # Eger hesab yaddasdadirsa program bu hisseden baslayir.
     else:
         name = logged_in
         while True:
             print(f"\nLogged in with the name {logged_in}")
+            print("[0] Admin panel")
             print("[1] Deposit")
             print("[2] Withdraw")
             print("[3] Send money")
@@ -131,7 +134,10 @@ while True:
             print("[7] Log out")
 
             choice = input("Select : ")
-            
+
+            if choice == "0":
+                pass
+
             if choice == "1":
                 try:
                     amount = float(input("Amount: "))
@@ -163,14 +169,13 @@ while True:
                     trSave(transaction)
 
             if choice == "3":
-                card_no = input("Card no : ")
-                cardHave = False
+                card_no = input("Card no : ")       
+                cardHave = False  # Programin dovure girib-girmediyini yoxlamaq ucun yaradilan bool deyiseni
                 for i in users:
                     if users[i]["card_no"] == card_no:
                         print(f"Is this the person you want to send money to? {i}")
                         choice = input("Yes [1] | No [2] : ")
                         if choice == "1":
-
                             try:
                                 amount = float(input("Amount: "))
                             except ValueError:
@@ -192,6 +197,7 @@ while True:
 
                             if cardHave is True:
                                 print("Process successful : Money sent.")
+                                # Tranzakisiya pulu gonderen ve alan olmaqla 2 hesapdada qeyd olunur
                                 transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat sent from account\n'
                                 transaction += f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {i} | ID : {users[i]["card_no"]} | Status : {amount} manat transferred to account\n'
                                 trSave(transaction)
@@ -221,4 +227,4 @@ while True:
                 logged_in = None
                 saveSession(logged_in)
                 break
-
+            
