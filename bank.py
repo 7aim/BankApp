@@ -293,4 +293,11 @@ def logged_in_menu():
         else:
             print("Invalid option!")
 
-main_menu()
+    
+while True:
+    load_users()
+    logged_in_user = load_session()
+    if logged_in_user:
+        logged_in_menu()
+    else:
+        main_menu()
