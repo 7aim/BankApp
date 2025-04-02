@@ -45,8 +45,13 @@ def saveSession(session_data):
 def createAccount():
     id = len(users) + 1
     name = input("Name : ")
+
     password = input("Password : ")
+    while len(password) <= 4:
+        print("Password length must be greater than 4")
+        password = input("Password : ")
     password = hashPassword(password)
+
     card_no = input("Card Number : ")
     while len(card_no) != 4:
         print("Card no must be 4 digits")
@@ -80,7 +85,9 @@ def signIn():
             print("Name not found")
             name = input("Name : ")
 
-    password = hashPassword(input("Password : "))
+    password = input("Password : ")
+    password = hashPassword(password)  
+
     while password not in users[name]["password"]:
         print("Password is incorrect")
         password = input("Password : ")
@@ -120,35 +127,41 @@ while True:
             print("[3] Send money")
             print("[4] View balance")
             print("[5] Transaction history")
-            print("[6] Log out")
+            print("[6] Reset password")
+            print("[7] Log out")
 
             choice = input("Select : ")
+            
             if choice == "1":
-                
                 try:
                     amount = float(input("Amount: "))
                 except ValueError:
                     print("Invalid amount!")  
+                if amount > 0:
+                    users[name]["balance"] += amount
+                else:
+                    print("Amount must be greater than 0!")
+                    break
 
-                users[name]["balance"] += amount
                 userSave(users)
                 transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat loaded in the account\n'
                 trSave(transaction)
+
             if choice == "2":
-                
                 try:
                     amount = float(input("Amount: "))
                 except ValueError:
                     print("Invalid amount!")
 
-                while amount > users[name]["balance"]:
-                    print("Insufficient balance")
+                while amount > users[name]["balance"] and amount > 0:
+                    print("Insufficient balance or invalid amount")
                     amount = float(input("Amount : "))
                 else:
                     users[name]["balance"] -= amount
                     userSave(users)
                     transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat withdrawn from the account\n'
                     trSave(transaction)
+
             if choice == "3":
                 card_no = input("Card no : ")
                 cardHave = False
@@ -164,7 +177,7 @@ while True:
                                 print("Invalid amount!")
                                 break
 
-                            while amount > users[name]["balance"]:
+                            while amount > users[name]["balance"] and amount > 0:
                                 print(f"Insufficient balance.Your balance : {users[name]["balance"]}")
                                 choice = input("Continue [1] | Go back [2] : ")
                                 if choice == "1":                                    
@@ -179,18 +192,32 @@ while True:
 
                             if cardHave is True:
                                 print("Process successful : Money sent.")
+                                transaction = f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {name} | ID : {users[name]["card_no"]} | Status : {amount} manat sent from account\n'
+                                transaction += f'Date : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} | Name : {i} | ID : {users[i]["card_no"]} | Status : {amount} manat transferred to account\n'
+                                trSave(transaction)
                             else:
                                 print("Process unsuccessful : Card no not found.")
 
                         if choice == "2":
                             print("Process unsuccessful")
 
-
             if choice == "4":
                 print(f"Your balance : {users[name]["balance"]}")
+
             if choice == "5":
                 print(trLoad())
+
             if choice == "6":
+                password = input("Enter new password  : ") 
+                while len(password) <= 4:
+                    print("Password length must be greater than 4")
+                    password = input("Enter new password : ")
+                password = hashPassword(password)   
+                users[name]["password"] = password
+                print("Your password changed")
+                userSave(users)
+
+            if choice == "7":
                 logged_in = None
                 saveSession(logged_in)
                 break

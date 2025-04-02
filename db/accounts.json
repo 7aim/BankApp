@@ -45,7 +45,7 @@
         "id": 7,
         "password": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
         "card_no": "1112",
-        "balance": 0,
+        "balance": 73.0,
         "log": []
     },
     "C": {
@@ -64,9 +64,16 @@
     },
     "E": {
         "id": 10,
-        "password": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+        "password": "b2d8f5c715a71b2f6da73d2fac7841d66e5eb0a5f890c9acda5acdea465fd495",
         "card_no": "1115",
-        "balance": -12.0,
+        "balance": 15.0,
+        "log": []
+    },
+    "aasim": {
+        "id": 11,
+        "password": "48862166e6b797758718888e27e1bab422e94aad722144da50c77ee0d9b48831",
+        "card_no": "1234",
+        "balance": 0,
         "log": []
     }
 }

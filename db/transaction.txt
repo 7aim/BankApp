@@ -9,3 +9,8 @@ Date : 2025-03-30 22:18:49 | Name : y | ID : 2 | Status : 11.0 manat loaded in t
 Date : 2025-03-30 22:19:08 | Name : y | ID : 2 | Status : 1.0 manat loaded in the account
 Date : 2025-03-30 22:19:37 | Name : y | ID : 2 | Status : 1.0 manat loaded in the account
 Date : 2025-03-30 22:53:39 | Name : y | ID : 2 | Status : 5.0 manat withdrawn from the account
+Date : 2025-04-02 17:30:00 | Name : E | ID : 1115 | Status : 100.0 manat loaded in the account
+Date : 2025-04-02 17:33:08 | Name : {'id': 10, 'password': '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b', 'card_no': '1115', 'balance': 27.0, 'log': []} | ID : 1115 | Status : 11.0 manat sent from account
+Date : 2025-04-02 17:33:08 | Name : {'id': 7, 'password': '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b', 'card_no': '1112', 'balance': 61.0, 'log': []} | ID : 1112 | Status : 11.0 manat transferred to account
+Date : 2025-04-02 17:34:18 | Name : E | ID : 1115 | Status : 12.0 manat sent from account
+Date : 2025-04-02 17:34:18 | Name : B | ID : 1112 | Status : 12.0 manat transferred to account
